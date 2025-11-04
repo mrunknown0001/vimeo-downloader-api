@@ -57,4 +57,10 @@ class User extends Authenticatable implements FilamentUser
     {
         return true;
     }
+
+
+    public function userPlan()
+    {
+        return $this->hasOne(UserPlan::class);
+    }
 }

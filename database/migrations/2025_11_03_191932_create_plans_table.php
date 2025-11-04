@@ -15,7 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100)->nullable();
             $table->string('description', 255)->nullable();
+            $table->float('price', 2)->default(0.00);
             $table->integer('points_per_month')->default(200); // default: 200 for free tier accounts
+            $table->integer('request_per_second')->default(7);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
