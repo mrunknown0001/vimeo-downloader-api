@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use App\Enums\UserRole;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -53,6 +54,20 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::created(function (User $user) {
+            // Generate a unique key and save it to the user
+            $user->api_key = Str::random(40);
+            $user->save();
+
+            $user->userPlan()->create([
+                'user_id' => $user->id,
+                'plan_id' => 1, // FREE plan by default
+            ]);
+        });
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
@@ -61,6 +76,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function userPlan()
     {
-        return $this->hasOne(UserPlan::class);
+        return $this->hasOne(UserPlan::class, 'user_id');
+    }
+
+
+    public function usage()
+    {
+        return $this->hasMany(Usage::class);
     }
 }

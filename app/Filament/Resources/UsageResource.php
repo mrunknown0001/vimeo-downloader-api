@@ -34,8 +34,19 @@ class UsageResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Access Timestamp')
+                    ->dateTime()
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('ip_address')
+                    ->label('IP Address')
+                    // ->formatStateUsing(fn ($state) => $state ?? 'N/A')
+                    ->default('N/A')
+                    ->color(fn ($state) => $state === null ? 'primary' : 'white')
+                    ->searchable(),
             ])
+            ->defaultSort('created_at', 'asc')
             ->filters([
                 //
             ])

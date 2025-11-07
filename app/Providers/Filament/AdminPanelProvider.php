@@ -46,6 +46,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentEditProfilePlugin::make()
                     ->shouldRegisterNavigation(false),
             ])
+            ->registration()
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->label('Edit Profile')

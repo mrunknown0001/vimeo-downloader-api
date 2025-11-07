@@ -17,7 +17,7 @@ class VideoDownloaderApi
         $this->apiKey = config('services.video_download_api.key', '');
     }
 
-    public function download(string $url, string $format = 'mp4'): array
+    public function download(string $url, string $format = '1080'): array
     {
         if (empty($this->apiKey)) {
             return ['success' => false, 'error' => 'API key not configured'];
@@ -31,7 +31,7 @@ class VideoDownloaderApi
                 'audio_quality' =>  320,
                 'allow_extended_durations' => true,
             ]);
-            Log::info($format);
+            
             if ($response->successful()) {
                 return $response->json();
             }

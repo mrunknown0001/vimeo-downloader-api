@@ -654,14 +654,14 @@
                     <span class="brand-icon" aria-hidden="true">⬇</span>
                     <span class="brand-name">{{ config('app.name', 'Laravel') }}</span>
                 </a>
-                @if (Route::has('login'))
+                @if (Route::has('filament.admin.auth.login'))
                     <nav class="auth-nav">
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="auth-link auth-link--primary">
+                            <a href="{{ route('filament.admin.pages.dashboard') }}" class="auth-link auth-link--primary">
                                 Dashboard
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="auth-link">
+                            <a href="{{ route('filament.admin.auth.login') }}" class="auth-link">
                                 Log in
                             </a>
 
