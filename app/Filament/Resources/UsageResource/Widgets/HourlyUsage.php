@@ -3,32 +3,61 @@
 namespace App\Filament\Resources\UsageResource\Widgets;
 
 use Filament\Widgets\ChartWidget;
+use App\Models\Usage;
+use Illuminate\Support\Facades\DB;
 
 class HourlyUsage extends ChartWidget
 {
-    protected static ?string $heading = 'Hourly Usage (24 hours)';
+    protected static ?string $heading = 'Usage Per Hour (Last 24 Hours)';
 
+    protected static ?int $sort = 2;
+
+    protected static ?string $maxHeight = '300px';
+
+    // Update every 5 minutes
     protected static ?string $pollingInterval = '5m';
 
     protected function getData(): array
     {
+        $now = now();
+        $past24Hours = $now->copy()->subHours(24);
+
+        // Get hourly usage data from the database
+        $usageData = Usage::select(
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour'),
+                DB::raw('SUM(point) as total_points')
+            )
+            ->where('created_at', '>=', $past24Hours)
+            ->groupBy('hour')
+            ->orderBy('hour')
+            ->get()
+            ->keyBy('hour');
+
+        // Generate all hours for the past 24 hours
+        $hours = collect();
+        for ($i = 23; $i >= 0; $i--) {
+            $hour = $now->copy()->subHours($i)->startOfHour();
+            $hourKey = $hour->format('Y-m-d H:00:00');
+            
+            $hours->push([
+                'label' => $hour->format('H:i'),
+                'full_label' => $hour->format('M d, H:i'),
+                'points' => $usageData->get($hourKey)->total_points ?? 0,
+            ]);
+        }
+
         return [
             'datasets' => [
                 [
-                    'label' => 'API Requests',
-                    'data' => [145, 168, 192, 245, 312, 425, 568, 695, 812, 758, 642, 535, 658, 782, 895, 825, 712, 598, 445, 328, 265, 198, 172, 152],
-                    'borderColor' => '#10b981',
-                    'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
+                    'label' => 'Points',
+                    'data' => $hours->pluck('points')->toArray(),
+                    'borderColor' => '#3b82f6',
+                    'backgroundColor' => 'rgba(59, 130, 246, 0.1)',
                     'fill' => true,
                     'tension' => 0.4,
                 ],
             ],
-            'labels' => [
-                '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
-                '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
-                '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
-                '18:00', '19:00', '20:00', '21:00', '22:00', '23:00',
-            ],
+            'labels' => $hours->pluck('label')->toArray(),
         ];
     }
 
@@ -54,7 +83,7 @@ class HourlyUsage extends ChartWidget
                 'y' => [
                     'beginAtZero' => true,
                     'ticks' => [
-                        'stepSize' => 100,
+                        'precision' => 0,
                     ],
                 ],
                 'x' => [
@@ -76,3 +105,5 @@ class HourlyUsage extends ChartWidget
         return 'full';
     }
 }
+
+
